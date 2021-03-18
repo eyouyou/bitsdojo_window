@@ -1,5 +1,13 @@
+## 0.0.9
+    - Linux support added
+## 0.0.8
+    - Added macOS readme instructions
+## 0.0.7
+    - macOS support added
+## 0.0.6
+    - Works with latest Flutter version (master channel)
 ## 0.0.5
-    - Works with latest Flutter version
+    - Works with latest Flutter version (dev channel)
 ## 0.0.4
     - Better integration with other plugins
 ## 0.0.3

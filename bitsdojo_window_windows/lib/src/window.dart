@@ -20,15 +20,14 @@ bool isValidHandle(int handle, String operation) {
 
 Rect getScreenRectForWindow(int handle) {
   int monitor = MonitorFromWindow(handle, MONITOR_DEFAULTTONEAREST);
-  final monitorInfo = allocate<MONITORINFO>()
-    ..ref.cbSize = sizeOf<MONITORINFO>();
+  final monitorInfo = calloc<MONITORINFO>()..ref.cbSize = sizeOf<MONITORINFO>();
   final result = GetMonitorInfo(monitor, monitorInfo);
   if (result == TRUE) {
     return Rect.fromLTRB(
-        monitorInfo.ref.rcWorkLeft.toDouble(),
-        monitorInfo.ref.rcWorkTop.toDouble(),
-        monitorInfo.ref.rcWorkRight.toDouble(),
-        monitorInfo.ref.rcWorkBottom.toDouble());
+        monitorInfo.ref.rcWork.left.toDouble(),
+        monitorInfo.ref.rcWork.top.toDouble(),
+        monitorInfo.ref.rcWork.right.toDouble(),
+        monitorInfo.ref.rcWork.bottom.toDouble());
   }
   return Rect.zero;
 }
@@ -43,22 +42,19 @@ class WinWindow extends DesktopWindow {
     _alignment = Alignment.center;
   }
 
-  @override
   Rect get rect {
-    final winRect = allocate<RECT>();
+    final winRect = calloc<RECT>();
     GetWindowRect(handle, winRect);
     Rect result = winRect.ref.toRect;
-    free(winRect);
+    calloc.free(winRect);
     return result;
   }
 
-  @override
   set rect(Rect newRect) {
     setWindowPos(handle, 0, newRect.left.toInt(), newRect.top.toInt(),
         newRect.width.toInt(), newRect.height.toInt(), 0);
   }
 
-  @override
   Size get size {
     final winRect = this.rect;
     final gotSize = getLogicalSize(Size(winRect.width, winRect.height));
@@ -132,10 +128,10 @@ class WinWindow extends DesktopWindow {
     final sizeOnScreen = this.sizeOnScreen;
     _alignment = newAlignment;
     final screenRect = getScreenRectForWindow(handle);
-    this.rect = getRectOnScreen(sizeOnScreen, _alignment, screenRect);
+    final rectOnScreen = getRectOnScreen(sizeOnScreen, _alignment, screenRect);
+    this.rect = rectOnScreen;
   }
 
-  @override
   set minSize(Size newSize) {
     _minSize = newSize;
     setMinSize(_minSize.width.toInt(), _minSize.height.toInt());
@@ -182,6 +178,15 @@ class WinWindow extends DesktopWindow {
     return (IsZoomed(handle) == 1);
   }
 
+  @Deprecated("use isVisible instead")
+  bool get visible {
+    return isVisible;
+  }
+
+  bool get isVisible {
+    return (IsWindowVisible(handle) == 1);
+  }
+
   Offset get position {
     final winRect = this.rect;
     return Offset(winRect.left, winRect.top);
@@ -205,6 +210,7 @@ class WinWindow extends DesktopWindow {
         handle, 0, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_HIDEWINDOW);
   }
 
+  @Deprecated("use show()/hide() instead")
   set visible(bool isVisible) {
     if (isVisible) {
       show();
